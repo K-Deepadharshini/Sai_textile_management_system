@@ -144,12 +144,10 @@ process.on('unhandledRejection', (err) => {
 });
 
 // Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received. Shutting down gracefully...');
-  mongoose.connection.close(() => {
-    console.log('MongoDB connection closed');
-    process.exit(0);
-  });
+process.on("SIGTERM", async () => {
+  console.log("SIGTERM received. Shutting down gracefully...");
+  await mongoose.connection.close();
+  process.exit(0);
 });
 
 const PORT = process.env.PORT || 5000;
