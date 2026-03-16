@@ -148,7 +148,21 @@ const AdminProducts = () => {
     
     try {
       const form = e.target;
-      const formData = new FormData(form);
+      // Create FormData manually to avoid including file input files
+      const formData = new FormData();
+      
+      // Add form fields manually
+      formData.append('name', form.name.value);
+      formData.append('productCode', form.productCode.value);
+      formData.append('type', form.type.value);
+      formData.append('denier', form.denier.value);
+      formData.append('price', form.price.value);
+      formData.append('moq', form.moq.value);
+      formData.append('unit', form.unit.value);
+      formData.append('minStockLevel', form.minStockLevel.value);
+      formData.append('stockQuantity', form.stockQuantity.value);
+      formData.append('gstPercentage', form.gstPercentage.value);
+      formData.append('description', form.description.value);
       
       console.log('📝 Form elements:');
       const formElements = {
