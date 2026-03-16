@@ -88,6 +88,27 @@ app.use('/api/', apiLimiter);
 // Static files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Root endpoint
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Sai Textile Management System API',
+    version: '1.0.0',
+    documentation: '/api/health',
+    endpoints: {
+      auth: '/api/auth',
+      products: '/api/products',
+      orders: '/api/orders',
+      inventory: '/api/inventory',
+      invoices: '/api/invoices',
+      dispatch: '/api/dispatch',
+      production: '/api/production',
+      reports: '/api/reports',
+      messages: '/api/messages'
+    }
+  });
+});
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.status(200).json({
