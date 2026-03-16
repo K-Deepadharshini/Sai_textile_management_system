@@ -137,10 +137,7 @@ app.use(notFound);
 app.use(errorHandler);
 
 // Database connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/textile-management', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/textile-management')
 .then(() => {
   console.log('✅ MongoDB connected successfully');
   
