@@ -58,12 +58,18 @@ app.use(cors({
       return callback(null, true);
     }
     
-    // Allow configured origin(s) from environment
-    const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:3000').split(',');
-    if (allowedOrigins.includes(origin)) {
+    // Allow Render domains (both frontend and backend)
+    if (origin.includes('onrender.com')) {
       return callback(null, true);
     }
     
+    // Allow configured origin(s) from environment
+    const allowedOrigins = (process.env.CORS_ORIGIN || '').split(',').map(o => o.trim()).filter(o => o);
+    if (allowedOrigins.length > 0 && allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    
+    console.log('CORS blocked origin:', origin);
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
