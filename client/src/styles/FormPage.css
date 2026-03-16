@@ -1,0 +1,97 @@
+/* Container */
+.form-container {
+  max-width: 800px;
+  margin: 30px auto;
+  padding: 25px 30px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Headings */
+.form-container h2 {
+  text-align: center;
+  color: #1a4d3e; /* forest green */
+  margin-bottom: 20px;
+}
+
+.form-container h3 {
+  margin: 25px 0 10px;
+  color: #111827; /* near black */
+  border-left: 4px solid #d4a574; /* gold accent */
+  padding-left: 8px;
+  font-size: 1.1rem;
+}
+
+/* Form labels */
+.form-container label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #374151;
+}
+
+/* Inputs, Textareas, Selects */
+.form-container input,
+.form-container textarea,
+.form-container select {
+  margin-top: 6px;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border 0.2s ease;
+}
+
+.form-container input:focus,
+.form-container textarea:focus,
+.form-container select:focus {
+  border-color: #1a4d3e; /* forest green highlight */
+  box-shadow: 0px 0px 5px rgba(26, 77, 62, 0.3);
+}
+
+/* Textarea */
+.form-container textarea {
+  resize: vertical;
+  min-height: 70px;
+}
+
+/* File input */
+.form-container input[type="file"] {
+  border: none;
+  padding: 6px 0;
+  font-size: 0.9rem;
+  background: transparent;
+}
+
+/* Submit Button */
+.form-container button[type="submit"] {
+  margin-top: 20px;
+  padding: 12px;
+  border: none;
+  background: #1a4d3e;
+  color: white;
+  font-weight: bold;
+  font-size: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.form-container button[type="submit"]:hover {
+  background: #0f2e23;
+  transform: translateY(-1px);
+}
+
+.form-container button[type="submit"]:active {
+  transform: translateY(1px);
+}
+
+/* BMI Category text */
+.form-container p {
+  margin: 5px 0;
+  font-size: 0.95rem;
+}

@@ -1,0 +1,96 @@
+/* Container for forms */
+.auth-container {
+  max-width: 400px;
+  margin: 50px auto;
+  padding: 30px 25px;
+  background: #f8fafc; /* light gray */
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  text-align: center;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Form Title */
+.auth-container h2 {
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+  color: #1a4d3e; /* forest green */
+}
+
+/* Form Styling */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Labels & Inputs */
+.auth-form label {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.auth-form input {
+  margin-top: 6px;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.auth-form input:focus {
+  border-color: #1a4d3e;
+}
+
+/* Buttons */
+.auth-form button {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #1a4d3e;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.auth-form button:hover {
+  background-color: #0f2e23;
+}
+
+/* OTP Input */
+.auth-form input[type="text"]:nth-last-child(1) {
+  letter-spacing: 3px;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .auth-container {
+    margin: 30px 15px;
+    padding: 25px 15px;
+  }
+
+  .auth-form button {
+    font-size: 0.95rem;
+  }
+}
+
+/* Optional: add some alert styling */
+.auth-alert {
+  margin-top: 10px;
+  padding: 8px;
+  background-color: #fde68a; /* yellow */
+  color: #92400e;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}

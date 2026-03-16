@@ -1,0 +1,83 @@
+.dashboard-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: #f9fafb;
+  min-height: 100vh;
+}
+
+.dashboard-title {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #1f2937; /* Dark gray */
+  margin-bottom: 2rem;
+}
+
+.no-records {
+  text-align: center;
+  font-size: 1.1rem;
+  color: #6b7280;
+}
+
+.records-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 1.5rem;
+}
+
+.record-card {
+  background: #ffffff;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.record-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.record-card h2 {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #111827;
+  margin-bottom: 0.5rem;
+}
+
+.record-card h3 {
+  margin-top: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1a4d3e; /* Forest green highlight */
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 4px;
+}
+
+.record-card p {
+  font-size: 0.95rem;
+  color: #374151;
+  margin: 4px 0;
+}
+
+.record-card strong {
+  color: #111827;
+}
+
+.record-card a {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 6px 10px;
+  background: #1a4d3e;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: background 0.2s ease-in-out;
+}
+
+.record-card a:hover {
+  background: #0f2e23;
+}
