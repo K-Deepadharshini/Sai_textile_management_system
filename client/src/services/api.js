@@ -19,9 +19,7 @@ const api = axios.create({
       return 'http://localhost:5000/api';
     }
   })(),
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  // Do NOT set a default Content-Type header; allow axios to set it automatically (especially for FormData uploads)
 });
 
 // Request interceptor to add token
@@ -31,6 +29,15 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // When sending FormData (e.g., file uploads), allow axios to set the multipart boundary header.
+    // If we leave a default Content-Type, it can prevent multipart parsing on the server.
+    if (config.data instanceof FormData) {
+      if (config.headers) {
+        delete config.headers['Content-Type'];
+      }
+    }
+
     return config;
   },
   (error) => {
