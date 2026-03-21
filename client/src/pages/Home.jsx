@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import PublicNavbar from '../components/common/PublicNavbar';
+import { useAuth } from '../context/AuthContext';
+import messageService from '../services/messageService';
+import toast from 'react-hot-toast';
 import { FaLeaf, FaClock, FaShieldAlt, FaTruck, FaStar } from 'react-icons/fa';
 import image1 from '../../image1.png';
 import image2 from '../../image2.png';
@@ -20,6 +23,14 @@ import './styles/Home.css';
 const Home = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const { user } = useAuth();
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatInput, setChatInput] = useState('');
+  const [chatMessages, setChatMessages] = useState([
+    { from: 'bot', text: 'Hello! I am your Textile Assistant. Ask me anything about products, pricing, orders or support.' }
+  ]);
+  const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
     // Fetch products from API
@@ -101,6 +112,73 @@ const Home = () => {
       },
     ];
     setProducts(sampleData);
+  };
+
+  const getBotReply = (message) => {
+    const q = message.toLowerCase();
+
+    if (q.includes('what products') || q.includes('products do you offer')) {
+      return 'We offer a wide range of textile products including:\n• Polyester Filament Yarn (150D, 120D)\n• Yarn Dyed Fabric\n• Raw Yarn Material\n• Specialty Raw Yarn\n\nAll products are manufactured with premium quality standards. You can browse our full catalog by logging in to your account.';
+    }
+
+    if (q.includes('how do i place') || q.includes('place an order')) {
+      return 'To place an order:\n1. Register/Login to your account\n2. Browse our available products\n3. Select the product and quantity\n4. Add to cart and proceed to checkout\n5. Provide delivery details and payment information\n\nOur team will confirm your order within 24 hours.';
+    }
+
+    if (q.includes('delivery times') || q.includes('how long') || q.includes('shipping time')) {
+      return 'Our standard delivery times:\n• Within India: 7-12 working days\n• International: 15-25 working days\n\nUrgent orders can be expedited. Contact us for express delivery options. All shipments include tracking information.';
+    }
+
+    if (q.includes('return policy') || q.includes('returns') || q.includes('refund')) {
+      return 'Our return policy:\n• Returns accepted within 10 business days\n• Products must be in original condition\n• Return shipping costs may apply\n• Refunds processed within 5-7 business days\n\nPlease contact support with your order number for return assistance.';
+    }
+
+    if (q.includes('contact support') || q.includes('how can i contact') || q.includes('support')) {
+      return 'You can contact our support team through:\n• This chatbot (messages sent to admin)\n• Email: info@saitextile.com\n• Phone: +91 XXXX XXXX XX\n• Login to your account and use the Messages section\n\nOur support hours: Monday-Saturday, 9 AM - 6 PM IST';
+    }
+
+    if (q.includes('price') || q.includes('cost') || q.includes('pricing')) {
+      return 'Our prices depend on:\n• Product type and specifications\n• Order quantity (bulk discounts available)\n• Material quality requirements\n\nPlease share your specific requirements for a personalized quote. Minimum order quantities apply for certain products.';
+    }
+
+    if (q.includes('delivery') || q.includes('shipping') || q.includes('lead time')) {
+      return 'Delivery typically takes 7-12 working days for domestic orders. International shipping takes 15-25 working days. We provide real-time tracking for all shipments. Express delivery options are available for urgent requirements.';
+    }
+
+    if (q.includes('order') || q.includes('status')) {
+      return 'To check your order status:\n1. Login to your account\n2. Go to Orders section\n3. View order details and current status\n\nFor any issues, contact support with your order number. We provide regular updates on order progress.';
+    }
+
+    return 'Thanks for your question! I\'m here to help with information about our products, ordering process, pricing, delivery, and support. You can also click on the common questions above or ask me anything specific about our textile manufacturing services.';
+  };
+
+  const sendChatMessage = async () => {
+    if (!chatInput.trim()) return;
+
+    const userText = chatInput.trim();
+    setChatMessages((prev) => [...prev, { from: 'user', text: userText }]);
+    setChatInput('');
+
+    const botText = getBotReply(userText);
+    setChatMessages((prev) => [...prev, { from: 'bot', text: botText }]);
+
+    if (user && user.role === 'client') {
+      setIsSending(true);
+      try {
+        await messageService.sendMessage({
+          receiver: 'admin',
+          subject: 'Customer chatbot query',
+          message: userText,
+          category: 'customer-support'
+        });
+        toast.success('Your query has been sent to support.');
+      } catch (err) {
+        console.error('Chat message send error:', err);
+        toast.error('Failed to send query to support.');
+      } finally {
+        setIsSending(false);
+      }
+    }
   };
 
   return (
@@ -272,6 +350,106 @@ const Home = () => {
           <button className="btn btn-light">Get Started Today</button>
         </div>
       </section>
+
+      {/* AI Chatbot */}
+      <div style={{ position: 'fixed', right: '1rem', bottom: '1rem', zIndex: 9999 }}>
+        <button
+          onClick={() => setChatOpen((open) => !open)}
+          style={{
+            background: '#0066cc',
+            color: 'white',
+            border: 'none',
+            padding: '0.75rem 1rem',
+            borderRadius: '999px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            cursor: 'pointer'
+          }}
+        >
+          {chatOpen ? 'Close Chat' : 'Chat with AI Support'}
+        </button>
+
+        {chatOpen && (
+          <div style={{
+            width: '320px',
+            maxHeight: '480px',
+            marginTop: '0.75rem',
+            background: '#ffffff',
+            borderRadius: '12px',
+            boxShadow: '0 12px 24px rgba(0,0,0,0.2)',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden'
+          }}>
+            <div style={{ padding: '0.75rem', borderBottom: '1px solid #ddd', background: '#f7f7f7', fontWeight: 'bold' }}>
+              Textile AI Chatbot
+            </div>
+            <div style={{ padding: '0.75rem', borderBottom: '1px solid #eee', background: '#fafafa' }}>
+              <div style={{ fontSize: '0.875rem', color: '#666', marginBottom: '0.5rem' }}>Common Questions:</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
+                {[
+                  'What products do you offer?',
+                  'How do I place an order?',
+                  'What are your delivery times?',
+                  'What is your return policy?',
+                  'How can I contact support?'
+                ].map((question, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setChatInput(question)}
+                    style={{
+                      background: '#e3f2fd',
+                      color: '#1976d2',
+                      border: '1px solid #bbdefb',
+                      borderRadius: '16px',
+                      padding: '0.25rem 0.75rem',
+                      fontSize: '0.75rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseOver={(e) => e.target.style.background = '#bbdefb'}
+                    onMouseOut={(e) => e.target.style.background = '#e3f2fd'}
+                  >
+                    {question}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div style={{ flex: 1, padding: '0.75rem', overflowY: 'auto', background: '#fafafa' }}>
+              {chatMessages.map((msg, index) => (
+                <div key={index} style={{ marginBottom: '0.5rem', textAlign: msg.from === 'user' ? 'right' : 'left' }}>
+                  <div style={{
+                    display: 'inline-block',
+                    background: msg.from === 'user' ? '#d8eafd' : '#e0e0e0',
+                    color: '#111',
+                    borderRadius: '12px',
+                    padding: '0.5rem 0.75rem',
+                    maxWidth: '85%'
+                  }}>
+                    {msg.text}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                sendChatMessage();
+              }}
+              style={{ borderTop: '1px solid #ddd', display: 'flex', padding: '0.5rem', gap: '0.5rem' }}
+            >
+              <input
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                placeholder="Ask about pricing, orders, etc."
+                style={{ flex: 1, border: '1px solid #ccc', borderRadius: '8px', padding: '0.5rem' }}
+              />
+              <button type="submit" disabled={isSending || !chatInput.trim()} style={{ background: '#0066cc', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.5rem 0.8rem', cursor: 'pointer' }}>
+                {isSending ? 'Sending...' : 'Send'}
+              </button>
+            </form>
+          </div>
+        )}
+      </div>
 
       {/* Footer */}
       <footer className="footer">

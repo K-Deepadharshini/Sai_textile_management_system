@@ -77,6 +77,11 @@ const productSchema = new mongoose.Schema({
       required: true
     }
   }],
+    model3D: {
+      url: String,
+      publicId: String,
+      fileName: String
+    },
     description: String,
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,

@@ -3,22 +3,7 @@ import axios from 'axios';
 
 // Create axios instance
 const api = axios.create({
-  // Normalize VITE_API_URL: allow values like ':5000/api' by prefixing protocol and host
-  baseURL: (() => {
-    try {
-      let envUrl = import.meta.env.VITE_API_URL;
-      if (envUrl && typeof envUrl === 'string' && envUrl.startsWith(':')) {
-        envUrl = `http://localhost${envUrl}`;
-        console.warn('Normalized VITE_API_URL to', envUrl);
-      }
-      const finalUrl = envUrl || 'http://localhost:5000/api';
-      console.info('API baseURL set to', finalUrl);
-      return finalUrl;
-    } catch (e) {
-      console.error('Error reading VITE_API_URL, falling back to default', e);
-      return 'http://localhost:5000/api';
-    }
-  })(),
+  baseURL: 'https://sai-textile-management-system-backend.onrender.com/api',
   // Do NOT set a default Content-Type header; allow axios to set it automatically (especially for FormData uploads)
 });
 

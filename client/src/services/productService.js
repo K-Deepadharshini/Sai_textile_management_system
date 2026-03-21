@@ -153,6 +153,42 @@ const productService = {
       throw error.response?.data || { message: 'Failed to delete image' };
     }
   },
+
+  // Upload product 3D model
+  async uploadProduct3DModel(productId, modelFile) {
+    const formData = new FormData();
+    formData.append('model', modelFile);
+
+    try {
+      const response = await api.post(`/products/${productId}/model3d`, formData);
+      return response.data;
+    } catch (error) {
+      if (error.response?.status === 404) {
+        // fallback to PUT if route exists for update-style endpoints
+        try {
+          const fallbackResponse = await api.put(`/products/${productId}/model3d`, formData);
+          return fallbackResponse.data;
+        } catch (fallbackError) {
+          console.error('Upload 3D model fallback error:', fallbackError.response?.data || fallbackError);
+          throw fallbackError.response?.data || { message: 'Failed to upload 3D model (fallback)' };
+        }
+      }
+
+      console.error('Upload 3D model error:', error.response?.data || error);
+      throw error.response?.data || { message: 'Failed to upload 3D model' };
+    }
+  },
+
+  // Delete product 3D model
+  async deleteProduct3DModel(productId) {
+    try {
+      const response = await api.delete(`/products/${productId}/model3d`);
+      return response.data;
+    } catch (error) {
+      console.error('Delete 3D model error:', error.response?.data || error);
+      throw error.response?.data || { message: 'Failed to delete 3D model' };
+    }
+  },
 };
 
 export default productService;

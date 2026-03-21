@@ -224,7 +224,7 @@ export const getAvailableProducts = async (req, res) => {
     const products = await Product.find({ 
       status: 'available',
       stockQuantity: { $gt: 0 }
-    }).select('name productCode type denier moq unit price gstPercentage stockQuantity images description')
+    }).select('name productCode type denier moq unit price gstPercentage stockQuantity images description model3D')
       .sort('-createdAt');
 
     res.status(200).json({
@@ -791,6 +791,115 @@ export const deleteProductImage = async (req, res) => {
     });
   } catch (error) {
     console.error('Delete product image error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Upload product 3D model
+// @route   POST /api/products/:id/model3d
+// @access  Private/Admin
+export const uploadProduct3DModel = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please upload a 3D model file'
+      });
+    }
+
+    // Validate file type
+    if (!req.file.originalname.toLowerCase().endsWith('.fbx')) {
+      return res.status(400).json({
+        success: false,
+        message: 'Only FBX files are supported'
+      });
+    }
+
+    // Upload file to cloudinary (raw file)
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: 'textile-products/3d-models',
+      resource_type: 'raw',
+      public_id: `product-model-${req.params.id}-${Date.now()}`
+    });
+
+    // Update product with 3D model
+    product.model3D = {
+      url: result.secure_url,
+      publicId: result.public_id,
+      fileName: req.file.originalname
+    };
+
+    await product.save();
+
+    res.status(200).json({
+      success: true,
+      message: '3D model uploaded successfully',
+      data: product.model3D
+    });
+  } catch (error) {
+    console.error('Upload 3D model error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Delete product 3D model
+// @route   DELETE /api/products/:id/model3d
+// @access  Private/Admin
+export const deleteProduct3DModel = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+
+    if (!product.model3D || !product.model3D.publicId) {
+      return res.status(404).json({
+        success: false,
+        message: '3D model not found'
+      });
+    }
+
+    // Delete from cloudinary
+    try {
+      await cloudinary.uploader.destroy(product.model3D.publicId, {
+        resource_type: 'raw'
+      });
+    } catch (cloudinaryErr) {
+      console.warn('Cloudinary delete error:', cloudinaryErr);
+    }
+
+    // Remove 3D model from product
+    product.model3D = null;
+
+    await product.save();
+
+    res.status(200).json({
+      success: true,
+      message: '3D model deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete 3D model error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error',

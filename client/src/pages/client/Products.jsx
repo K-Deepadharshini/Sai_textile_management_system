@@ -7,6 +7,7 @@ import {
   DialogActions, IconButton, Rating, Pagination, Stack,
   Tooltip, CircularProgress, InputAdornment, Paper
 } from '@mui/material';
+import Model3DViewer from '../../components/common/Model3DViewer';
 import {
   FilterList, Search, Visibility, ShoppingCart,
   Palette, Scale, LocalOffer, Inventory
@@ -28,6 +29,7 @@ const Products = () => {
   });
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [show3DViewer, setShow3DViewer] = useState(false);
   const [page, setPage] = useState(1);
   const [productsPerPage] = useState(12);
 
@@ -156,6 +158,16 @@ const Products = () => {
 
   const handleViewDetails = (product) => {
     setSelectedProduct(product);
+  };
+
+  const handleView3D = (product) => {
+    const modelUrl = product?.model3D?.url;
+    if (!modelUrl || modelUrl.includes('res.cloudinary.com/demo/raw/upload')) {
+      toast.error('No valid 3D model available for this product');
+      return;
+    }
+    setSelectedProduct(product);
+    setShow3DViewer(true);
   };
 
   const handlePlaceOrder = (product) => {
@@ -402,7 +414,7 @@ const Products = () => {
                       </Typography>
                     </CardContent>
 
-                    <CardActions sx={{ p: 2, pt: 0 }}>
+                    <CardActions sx={{ p: 2, pt: 0, gap: 1, flexWrap: 'wrap' }}>
                       <Button
                         fullWidth
                         variant="contained"
@@ -412,6 +424,16 @@ const Products = () => {
                       >
                         {product.status === 'available' ? 'Order Now' : 'Out of Stock'}
                       </Button>
+                      {product.model3D?.url && (
+                        <Button
+                          variant="outlined"
+                          color="secondary"
+                          onClick={() => handleView3D(product)}
+                          sx={{ minWidth: 120 }}
+                        >
+                          View AR
+                        </Button>
+                      )}
                       <IconButton
                         onClick={() => handleViewDetails(product)}
                         sx={{ ml: 'auto' }}
@@ -590,6 +612,14 @@ const Products = () => {
             </DialogContent>
             <DialogActions sx={{ p: 3 }}>
               <Button onClick={() => setSelectedProduct(null)}>Close</Button>
+              {selectedProduct?.model3D?.url && (
+                <Button
+                  variant="outlined"
+                  onClick={() => setShow3DViewer(true)}
+                >
+                  View AR
+                </Button>
+              )}
               <Button
                 variant="contained"
                 startIcon={<ShoppingCart />}
@@ -604,6 +634,31 @@ const Products = () => {
             </DialogActions>
           </>
         )}
+      </Dialog>
+
+      <Dialog
+        open={show3DViewer}
+        onClose={() => setShow3DViewer(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>3D Model Viewer</DialogTitle>
+        <DialogContent>
+          {selectedProduct?.model3D?.url ? (
+            <Model3DViewer
+              modelUrl={selectedProduct.model3D.url}
+              width="100%"
+              height="480px"
+            />
+          ) : (
+            <Typography color="text.secondary">
+              No 3D model available for this product.
+            </Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShow3DViewer(false)}>Close</Button>
+        </DialogActions>
       </Dialog>
     </Container>
   );

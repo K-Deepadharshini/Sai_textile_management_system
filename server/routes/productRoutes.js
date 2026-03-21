@@ -12,7 +12,9 @@ import {
   getProductStats,
   uploadProductImage,
   deleteProductImage,
-  updateStock
+  updateStock,
+  uploadProduct3DModel,
+  deleteProduct3DModel
 } from '../controllers/productController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 import upload from '../middleware/uploadMiddleware.js';
@@ -92,6 +94,27 @@ router.delete('/:id/image/:imageId',
   protect,
   authorize('admin'),
   deleteProductImage
+);
+
+router.post('/:id/model3d',
+  protect,
+  authorize('admin'),
+  upload.single('model'),
+  uploadProduct3DModel
+);
+
+// Also accept PUT to support clients using update-style model uploads.
+router.put('/:id/model3d',
+  protect,
+  authorize('admin'),
+  upload.single('model'),
+  uploadProduct3DModel
+);
+
+router.delete('/:id/model3d',
+  protect,
+  authorize('admin'),
+  deleteProduct3DModel
 );
 
 export default router;

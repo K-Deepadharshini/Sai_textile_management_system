@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaSearch, FaEdit, FaTrash, FaBox, FaFilter, FaImage, FaTimes } from 'react-icons/fa';
+import { FaPlus, FaSearch, FaEdit, FaTrash, FaBox, FaFilter, FaImage, FaTimes, FaCube } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
 import productService from '../../services/productService';
 import { useAuth } from '../../context/AuthContext';
+import Model3DViewer from '../../components/common/Model3DViewer';
 
 const AdminProducts = () => {
   const [products, setProducts] = useState([]);
@@ -13,6 +14,10 @@ const AdminProducts = () => {
   const [currentProduct, setCurrentProduct] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imagePreviews, setImagePreviews] = useState([]);
+  const [model3DFile, setModel3DFile] = useState(null);
+  const [model3DPreview, setModel3DPreview] = useState(null);
+  const [show3DViewer, setShow3DViewer] = useState(false);
+  const [selected3DProduct, setSelected3DProduct] = useState(null);
 
   const { user } = useAuth();
 
@@ -78,6 +83,8 @@ const AdminProducts = () => {
     console.log('➕ Add product clicked');
     setCurrentProduct(null);
     setImagePreviews([]);
+    setModel3DFile(null);
+    setModel3DPreview(null);
     setShowModal(true);
   };
 
@@ -86,6 +93,8 @@ const AdminProducts = () => {
     console.log('Product images for editing:', product.images);
     setCurrentProduct(product);
     setImagePreviews(product.images || []);
+    setModel3DPreview(product.model3D || null);
+    setModel3DFile(null);
     setShowModal(true);
   };
 
@@ -137,6 +146,35 @@ const AdminProducts = () => {
 
   const removeImagePreview = (id) => {
     setImagePreviews(prev => prev.filter(img => img.id !== id));
+  };
+
+  const handleModel3DChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== 'application/octet-stream' && !file.name.endsWith('.fbx')) {
+      toast.error('Please upload a valid FBX file');
+      return;
+    }
+
+    if (file.size > 100 * 1024 * 1024) { // 100MB limit
+      toast.error('File size must be less than 100MB');
+      return;
+    }
+
+    setModel3DFile(file);
+    setModel3DPreview({ fileName: file.name });
+    toast.success('3D model selected');
+  };
+
+  const handleView3D = (product) => {
+    const modelUrl = product?.model3D?.url;
+    if (!modelUrl || modelUrl.includes('res.cloudinary.com/demo/raw/upload')) {
+      toast.error('No valid 3D model available for this product');
+      return;
+    }
+    setSelected3DProduct(product);
+    setShow3DViewer(true);
   };
 
   const handleSubmit = async (e) => {
@@ -236,11 +274,26 @@ const AdminProducts = () => {
         } else {
           console.log('⚠️  No images in response!');
         }
+
+        // Upload 3D model if selected
+        if (model3DFile) {
+          console.log('🧊 Uploading 3D model...');
+          try {
+            const modelResponse = await productService.uploadProduct3DModel(response.data._id, model3DFile);
+            console.log('✅ 3D model uploaded successfully:', modelResponse);
+            toast.success('3D model uploaded successfully');
+          } catch (modelError) {
+            console.error('❌ 3D model upload failed:', modelError);
+            toast.error('Product saved but 3D model upload failed');
+          }
+        }
         
         toast.success(currentProduct ? 'Product updated successfully' : 'Product added successfully');
         setShowModal(false);
         setCurrentProduct(null);
         setImagePreviews([]);
+        setModel3DFile(null);
+        setModel3DPreview(null);
         fetchProducts();
       } else {
         console.error('❌ API response not successful:', response);
@@ -446,6 +499,16 @@ const AdminProducts = () => {
                   <FaEdit />
                   <span>Edit</span>
                 </button>
+                {product.model3D && product.model3D.url && (
+                  <button
+                    style={{ ...styles.actionButton, ...styles.arButton }}
+                    onClick={() => handleView3D(product)}
+                    title="View 3D Model in AR"
+                  >
+                    <FaCube />
+                    <span>View AR</span>
+                  </button>
+                )}
                 <button
                   style={{ ...styles.actionButton, ...styles.deleteButton }}
                   onClick={() => handleDeleteProduct(product)}
@@ -669,6 +732,50 @@ const AdminProducts = () => {
                 )}
               </div>
 
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>3D Model (FBX)</label>
+                <input
+                  type="file"
+                  name="model3d"
+                  style={styles.formInput}
+                  accept=".fbx"
+                  disabled={isSubmitting}
+                  onChange={handleModel3DChange}
+                />
+                <small style={{ color: 'var(--gray-500)', fontSize: '0.75rem', display: 'block', marginTop: '0.25rem' }}>
+                  Upload FBX files (max 100MB). Used for AR preview.
+                </small>
+                
+                {/* 3D Model Preview */}
+                {model3DPreview && (
+                  <div style={styles.modelPreview}>
+                    <FaCube style={{ fontSize: '2rem', color: 'var(--primary-color)', marginRight: '0.5rem' }} />
+                    <div>
+                      <p style={{ fontSize: '0.875rem', color: 'var(--gray-600)', margin: 0 }}>
+                        {model3DPreview.fileName || '3D Model'}
+                      </p>
+                      {model3DFile && (
+                        <small style={{ color: 'var(--success-color)' }}>Ready to upload</small>
+                      )}
+                    </div>
+                    {model3DFile && (
+                      <button
+                        type="button"
+                        style={styles.removePreviewBtn}
+                        onClick={() => {
+                          setModel3DFile(null);
+                          setModel3DPreview(null);
+                        }}
+                        disabled={isSubmitting}
+                        title="Remove 3D model"
+                      >
+                        <FaTimes />
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+
               <button
                 type="submit"
                 style={styles.submitButton}
@@ -684,6 +791,61 @@ const AdminProducts = () => {
                 )}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* 3D Model Viewer Modal */}
+      {show3DViewer && selected3DProduct && (
+        <div style={styles.modalOverlay}>
+          <div style={{ ...styles.modalContent, maxWidth: '800px', width: '90%' }}>
+            <div style={styles.modalHeader}>
+              <h2 style={styles.modalTitle}>
+                3D Model: {selected3DProduct.name}
+              </h2>
+              <button
+                style={styles.closeButton}
+                onClick={() => {
+                  setShow3DViewer(false);
+                  setSelected3DProduct(null);
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            <div style={{ padding: '1rem' }}>
+              {selected3DProduct.model3D && selected3DProduct.model3D.url ? (
+                <div style={{ backgroundColor: '#f5f5f5', borderRadius: '0.5rem', overflow: 'hidden' }}>
+                  <Model3DViewer
+                    modelUrl={selected3DProduct.model3D.url}
+                    width="100%"
+                    height="500px"
+                  />
+                </div>
+              ) : (
+                <div style={{
+                  padding: '2rem',
+                  textAlign: 'center',
+                  color: 'var(--gray-500)'
+                }}>
+                  <FaCube style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.3 }} />
+                  <p>No 3D model available for this product</p>
+                </div>
+              )}
+              
+              <div style={{ marginTop: '1rem', display: 'flex', gap: '1rem' }}>
+                <button
+                  style={{ ...styles.submitButton, flex: 1 }}
+                  onClick={() => {
+                    setShow3DViewer(false);
+                    setSelected3DProduct(null);
+                  }}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -908,6 +1070,19 @@ const styles = {
   deleteButton: {
     backgroundColor: 'var(--danger-light)',
     color: 'var(--danger-color)',
+  },
+  arButton: {
+    backgroundColor: '#e3f2fd',
+    color: '#1976d2',
+  },
+  modelPreview: {
+    display: 'flex',
+    alignItems: 'center',
+    padding: '1rem',
+    backgroundColor: 'var(--gray-50)',
+    borderRadius: '0.375rem',
+    marginTop: '0.5rem',
+    border: '1px solid var(--gray-200)',
   },
   modalOverlay: {
     position: 'fixed',
